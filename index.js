@@ -6,7 +6,7 @@ const Scraper = NineGag.Scraper;
 const {
   FB_GRAPH_URL,
   FB_PG_ACCESS_TOKEN,
-  DF_PROJECT_ID  
+  DF_PROJECT_ID
 } = require("./config");
 
 const languageCode = "en-US"; // for DF
@@ -20,16 +20,18 @@ let posts = [],
 // Creates the endpoint for our webhook
 app.post("/webhook", (req, res) => {
   let body = req.body;
-  //  console.log(body);
+  console.log(JSON.stringify(body));
   // Checks this is an event from a page subscription
   if (body.object === "page") {
     // Iterates over each entry - there may be multiple if batched
-    body.entry.forEach(async function(entry) {
+    body.entry.forEach(async function (entry) {
+
       let webhook_event = entry.messaging[0];
       let senderId = webhook_event.sender.id;
-      let message = webhook_event.message.text;
+      let message = "";
+      try { message = webhook_event.message.text; } catch (err) { message = "Get Started"; }
 
-      //console.log(senderId, message);
+      console.log(senderId, message);
       let fbSendMsgUrl = `${FB_GRAPH_URL}me/messages?access_token=${FB_PG_ACCESS_TOKEN}`;
       let fbMessageAttachUrl = `${FB_GRAPH_URL}me/message_attachments?access_token=${FB_PG_ACCESS_TOKEN}`;
       const sessionClient = new dialogflow.SessionsClient();
