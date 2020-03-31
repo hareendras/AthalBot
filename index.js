@@ -2,7 +2,9 @@
 const axios = require("axios");
 const dialogflow = require("dialogflow");
 const NineGag = require("9gag");
+const HttpClient = NineGag.HttpClient;
 const Scraper = NineGag.Scraper;
+
 const {
   FB_GRAPH_URL,
   FB_PG_ACCESS_TOKEN,
@@ -52,8 +54,7 @@ app.post("/webhook", (req, res) => {
       try {
         let messageToUser = "";
         let responses = await sessionClient.detectIntent(request);
-        const result = responses[0].queryResult;
-        i === 0 ? (i = 1) : (i = 0);
+        const result = responses[0].queryResult;        
         let category = ["trending", "hot"];
         //  console.log(`  Query: ${result.queryText}`);
         //  console.log(`  Response: ${result.fulfillmentText}`);
@@ -65,8 +66,11 @@ app.post("/webhook", (req, res) => {
             console.log("Intent JOKE");
 
             if (posts === undefined || posts.length == 0) {
-              const scraper = new Scraper(30, category[i], 0);
+              const httpClient = new HttpClient();
+              await httpClient.init();
+              const scraper = new Scraper(httpClient,10, category[i], 0);
               let results = await scraper.scrap();
+              console.log("RESULT>>"+results);
               posts = results.reduce((out, item) => {
                 out.push({
                   id: item.id,
@@ -75,7 +79,11 @@ app.post("/webhook", (req, res) => {
                   type: item.type
                 });
                 return out;
+                
               }, []);
+              console.log( posts.length + "posts fetched");
+              console.log(posts);
+              i === 0 ? (i = 1) : (i = 0);
             }
             let thePost = posts.pop();
             //   console.log(posts[rand]);
